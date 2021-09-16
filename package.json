@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/event-sourcing.js",
   "scripts": {
-    "dev": "nodemon src/event-sourcing.js"
+    "dev": "nodemon src/event-sourcing.js",
+    "start":"node src/event-sourcing.js"
   },
   "keywords": [],
   "author": "",
