@@ -13,6 +13,10 @@ app.use(express.json())
 
 let intervalId = null;
 
+app.get('/test', (req, res) => {
+    res.send(`<h1>Test</h1>`);
+})
+
 app.get('/connect/lab1', (req, res) => {
     res.writeHead(200, {
         'Connection': 'keep-alive',
