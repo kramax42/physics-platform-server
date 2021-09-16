@@ -3,7 +3,7 @@ const cors = require('cors');
 const EventEmitter = require('events')
 const addon = require('napi-physics-modeling-oop');
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const emitter = new EventEmitter();
 const app = express()
 
