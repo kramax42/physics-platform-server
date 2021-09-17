@@ -5,7 +5,7 @@
   "main": "src/event-sourcing.js",
   "scripts": {
     "dev": "nodemon src/event-sourcing.js",
-    "start":"node src/event-sourcing.js"
+    "start": "node src/event-sourcing.js"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +13,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "napi-physics-modeling-oop": "4.0.2",
+    "napi-addon-fdtd": "^6.0.0",
     "nodemon": "^2.0.12"
   }
 }

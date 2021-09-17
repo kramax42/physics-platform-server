@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const EventEmitter = require('events')
-const addon = require('napi-physics-modeling-oop');
+const addon = require('napi-addon-fdtd');
 
 const PORT = process.env.PORT || 5000;
 const emitter = new EventEmitter();
