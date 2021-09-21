@@ -71,12 +71,13 @@ const stopInterval = () => {
 
 const newIntervalLab2 = async ( condition, reload = true) => {
 
-    let data = await addon.getFDTD_3D(condition, reload);
+
+    let data = await addon.getFDTD_3D_INTERFERENCE(condition, reload);
     //emitter.emit('newDataLab2', data);
 
     intervalId = setInterval(async () => {
-        for(let j = 0; j < 15; ++j){
-            data = await addon.getFDTD_3D(condition, false);
+        for(let j = 0; j < 10; ++j){
+            data = await addon.getFDTD_3D_INTERFERENCE(condition, false);
         }
         data = {
             dataX: data.dataX,
@@ -90,7 +91,7 @@ const newIntervalLab2 = async ( condition, reload = true) => {
             col: data.col}
 
         emitter.emit('newDataLab2', data);
-    }, 1000)
+    }, 500)
 }
 
 module.exports = lab2Router;
