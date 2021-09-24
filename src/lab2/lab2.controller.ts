@@ -1,11 +1,11 @@
 import * as express from 'express';
-import { Lab1Service } from "./lab1.service";
+import { Lab2Service } from "./lab2.service";
 
 
-class Lab1Controller {
-  public path = '/lab1';
+class Lab2Controller {
+  public path = '/lab2';
   public router = express.Router();
-  service = new Lab1Service();
+  service = new Lab2Service();
 
   constructor() {
     this.intializeRoutes();
@@ -19,4 +19,4 @@ class Lab1Controller {
 
 }
 
-export default Lab1Controller;
+export default Lab2Controller;

@@ -4,9 +4,7 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "dev": "ts-node ./src/server.ts",
-    "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
-    "watch": "nodemon -e ts -w ./src -x npm run watch:serve",
+    "dev": "nodemon -e ts -w ./src -x npm run watch:serve",
     "watch:serve": "ts-node src/server.ts"
   },
   "author": "",
