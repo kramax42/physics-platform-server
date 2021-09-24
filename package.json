@@ -1,19 +1,27 @@
 {
-  "name": "server",
+  "name": "server-ts",
   "version": "1.0.0",
   "description": "",
-  "main": "src/event-sourcing.js",
+  "main": "src/server.ts",
   "scripts": {
-    "dev": "nodemon src/event-sourcing.js",
-    "start": "node src/event-sourcing.js"
+    "dev": "ts-node ./src/server.ts",
+    "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
+    "watch": "nodemon -e ts -w ./src -x npm run watch:serve",
+    "watch:serve": "ts-node src/server.ts"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "napi-addon-fdtd": "2.1.1",
-    "nodemon": "^2.0.12"
+    "napi-addon-fdtd": "2.1.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/node": "^16.9.6",
+    "nodemon": "^2.0.12",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
   }
 }
