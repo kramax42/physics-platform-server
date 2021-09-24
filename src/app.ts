@@ -3,8 +3,8 @@ import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
 
 class App {
-  public app: express.Application;
-  public port: number;
+  private app: express.Application;
+  private port: number;
 
   constructor(controllers, port) {
     this.app = express();

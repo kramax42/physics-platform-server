@@ -58,7 +58,6 @@ export class Lab2Service {
     res.json({ message: "Data sending paused" });
   })
 
-
   private stopInterval = () => {
     if(this.intervalId ) {
       clearInterval(this.intervalId);
