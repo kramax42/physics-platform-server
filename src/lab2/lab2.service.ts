@@ -84,6 +84,6 @@ export class Lab2Service {
         col: data.col}
 
       emitter.emit('newData', data);
-    }, 500)
+    }, 250)
   }
 }

@@ -1,6 +1,8 @@
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
+// import * as compression from 'compression';
+const compression = require('compression')
 
 class App {
   private app: express.Application;
@@ -18,7 +20,8 @@ class App {
     this.app.use(bodyParser.json());
     this.app.use(cors());
     this.app.use(express.json())
-
+    this.app.use(cors());
+    // this.app.use(compression());
   }
 
   private initializeControllers(controllers) {
