@@ -1,62 +1,61 @@
- import App from './app';
-// import Lab1Controller from "./lab1/lab1.controller";
-// import Lab2Controller from "./lab2/lab2.controller";
-//
-// const PORT = process.env.PORT || 5000;
-//
-// const app = new App([
-//     new Lab1Controller(),
-//     new Lab2Controller(),
-//   ],
-//   PORT,
-// );
-//
-// app.listen();
-//
-
-const ws = require('ws');
+const ws = require("ws");
 
 //const addon = require('napi-addon-fdtd');
-var addon = require('../../napi-addon-fdtd/build/Release/napi-addon-fdtd.node');
+var addon = require("../../napi-addon-fdtd/build/Release/napi-addon-fdtd.node");
+
+import { CONTINUE, PAUSE, START, CLOSE } from "../constants/ws-event.constants";
 
 let intervalId;
 let condition: number[];
 
-
-import { LAB_1_2D, LAB_2_3D, LAB_3_INTERFERENCE, LAB_4_DIFRACTION,} from '../constants/data-type.constants';
+import {
+  LAB_1_2D,
+  LAB_2_3D,
+  LAB_3_INTERFERENCE,
+  LAB_4_DIFRACTION,
+} from "../constants/data-type.constants";
 
 type dataType = "2D" | "3D" | "INTERFERENCE" | "DIFRACTION";
 let currentDataType: dataType;
 
-type eventTypes = 'start' | 'pause' | 'continue';
+type eventTypes = "start" | "pause" | "continue" | "close";
 
 type startMessageType = {
-  event: eventTypes,
-  type: dataType,
-  dataToReturn: dataToReturnType,
-  condition: number[],
-}
+  event: eventTypes;
+  type: dataType;
+  dataToReturn: dataToReturnType;
+  condition: number[];
+};
 
 let getData;
 
 type dataToReturnType = "Ez" | "Hy" | "Hx" | "Energy";
 let dataToReturn: dataToReturnType = "Ez";
 
-const wss = new ws.Server({
-  port: 5000,
-}, () => console.log(`Server started on 5000`))
+const port = 5000;
 
-wss.on('connection', function connection(ws) {
-  ws.on('message', async function (messageJSON) {
-    const message: startMessageType = JSON.parse(messageJSON)
+const wss = new ws.Server(
+  {
+    port
+  },
+  () => console.log(`Server started on ${port}`)
+);
+
+wss.on("connection", function connection(ws) {
+  ws.on("message", async function (messageJSON) {
+    const message: startMessageType = JSON.parse(messageJSON);
     switch (message.event) {
-      case 'start':
-        console.log('start sending data')
+      case START:
+        // Clear previous process.
+        clearInterval(intervalId);
+        console.log("start sending data");
+
         condition = message.condition;
         currentDataType = message.type;
+
         switch (currentDataType) {
           case LAB_1_2D:
-            getData = addon.getFDTD_2D;
+            getData = addon.getFdtd2D;
             break;
           case LAB_2_3D:
             getData = addon.getFDTD_3D;
@@ -66,62 +65,68 @@ wss.on('connection', function connection(ws) {
             break;
           case LAB_4_DIFRACTION:
             getData = addon.getFDTD_3D_DIFRACTION;
-            dataToReturn = message.dataToReturn
+            dataToReturn = message.dataToReturn;
             break;
         }
-        newInterval( true, ws.send.bind(ws));
+        newInterval(true, ws.send.bind(ws));
         break;
-      case 'pause':
-        clearInterval(intervalId)
-        console.log('pause sending data')
+      case PAUSE:
+        clearInterval(intervalId);
+        console.log("pause sending data");
         break;
-      case 'continue':
+      case CONTINUE:
         newInterval(false, ws.send.bind(ws));
-        console.log('continue sending data')
+        console.log("continue sending data");
+        break;
+      case CLOSE:
+        clearInterval(intervalId);
+        // addon.clearFDTD_2D_data();
+        console.log("stop sending data | connection closed");
+
         break;
     }
-  })
-
-  ws.on("close", () => {
-    console.log('stop sending data | connection closed')
-  })
-})
-
-// function broadcastMessage(message, id=1) {
-//   wss.clients.forEach(client => {
-//     client.send(JSON.stringify(message))
-//   })
-// }
-
-// interface
+  });
+});
 
 // Milliseconds.
-const TIME_INTERVAL = 800;
+const TIME_INTERVAL = 200;
 
 async function newInterval(reload: boolean, send) {
   intervalId = null;
 
+  // In 3D case.
   const tempMatrix = [1, 2, 1, 1];
   const tempMatrixSize = 2;
   const tempReturnData = 3;
 
-  let data = await getData(condition, reload, tempMatrix, tempMatrixSize, tempReturnData);
+  let data = await getData(
+    condition,
+    reload,
+    tempMatrix,
+    tempMatrixSize,
+    tempReturnData
+  );
 
+  const stepsPerInterval = 5
   intervalId = setInterval(async () => {
-    for(let j = 0; j < 3; ++j){
-      data = await getData(condition, false, tempMatrix, tempMatrixSize, tempReturnData);
+    for (let j = 0; j < stepsPerInterval; ++j) {
+      data = await getData(
+        condition,
+        false,
+        tempMatrix,
+        tempMatrixSize,
+        tempReturnData
+      );
     }
 
     data = {
       dataX: data.dataX,
       dataY: data.dataY,
-      dataVal: data["data"+dataToReturn],
-      // dataEz: data.dataEz,
-      // dataHx: data.dataHx,
-      // dataEnergy: data.dataEnergy,
+      dataVal: data["data" + dataToReturn],
       step: data.currentTick,
       row: data.row,
-      col: data.col}
-    send(JSON.stringify(data))
-  }, TIME_INTERVAL)
+      col: data.col,
+    };
+    send(JSON.stringify(data));
+  }, TIME_INTERVAL);
 }
