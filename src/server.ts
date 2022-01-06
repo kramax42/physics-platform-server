@@ -17,6 +17,8 @@ import {
 
 type dataType = "2D" | "3D" | "INTERFERENCE" | "DIFRACTION";
 let currentDataType: dataType;
+let refractionMatrix: number[];
+let refractionMatrixRows: number;
 
 type eventTypes = "start" | "pause" | "continue" | "close";
 
@@ -25,6 +27,7 @@ type startMessageType = {
   type: dataType;
   dataToReturn: dataToReturnType;
   condition: number[];
+  matrix: number[][];
 };
 
 let getData;
@@ -36,7 +39,7 @@ const port = 5000;
 
 const wss = new ws.Server(
   {
-    port
+    port,
   },
   () => console.log(`Server started on ${port}`)
 );
@@ -52,6 +55,9 @@ wss.on("connection", function connection(ws) {
 
         condition = message.condition;
         currentDataType = message.type;
+        refractionMatrix = message.matrix.flat();
+        refractionMatrixRows = message.matrix.length;
+        console.log("refractionMatrix: ", refractionMatrix);
 
         switch (currentDataType) {
           case LAB_1_2D:
@@ -89,35 +95,92 @@ wss.on("connection", function connection(ws) {
 });
 
 // Milliseconds.
-const TIME_INTERVAL = 200;
+const TIME_INTERVAL = 500;
 
 async function newInterval(reload: boolean, send) {
   intervalId = null;
 
-  // In 3D case.
-  const tempMatrix = [1, 2, 1, 1];
-  const tempMatrixSize = 2;
-  const tempReturnData = 3;
+  ////////////////////
+  const yy1 = [];
+  const n1 = 1;
+  const n2 = 1.3;
+  const Nx: number = 200;
+  const Ny: number = 200;
 
+  for (let i = 0; i < Nx; i++) {
+    yy1.push([]);
+    // Each grid gap.
+    for (let j = 0; j < Ny; j++) {
+      yy1[i].push(n1);
+    }
+  }
+
+  // Difraction grid sizes.
+  const gridWidth = 10;
+  const gridGap = 8;
+
+  // const size_t gridWidth = 5; // temporary value
+  // const size_t gridGap = 3;    // temporary value
+
+  const gridGapCount = Ny / gridGap;
+  // const size_t gridBeginX = 5;
+
+  const gridBeginX = 6;
+  const gridEndX = gridBeginX + gridGap;
+
+  for (let i = gridBeginX; i <= gridEndX; i++) {
+    // Each grid gap.
+    for (let j = 0; j < gridGapCount; j += 2) {
+      for (let k = gridGap * j; k < gridGap * (j + 1); k++) {
+        yy1[i][k] = n2;
+      }
+    }
+  }
+  ////////////////////////
+  // In 3D case.
+
+  const tempMatrix = yy1.flat(); //[1, 1, 1, 1];
+  const tempMatrixSize = Nx; //2;
+  const tempReturnData = 0;
+
+  // let data = await getData(
+  //   condition,
+  //   reload,
+  //   tempMatrix,
+  //   tempMatrixSize,
+  //   tempReturnData
+  // );
   let data = await getData(
     condition,
     reload,
-    tempMatrix,
-    tempMatrixSize,
+    refractionMatrix,
+    refractionMatrixRows,
     tempReturnData
   );
 
-  const stepsPerInterval = 5
+  const stepsPerInterval = 5;
   intervalId = setInterval(async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
+      // data = await getData(
+      //   condition,
+      //   false,
+      //   tempMatrix,
+      //   tempMatrixSize,
+      //   tempReturnData
+      // );
       data = await getData(
         condition,
         false,
-        tempMatrix,
-        tempMatrixSize,
+        refractionMatrix,
+        refractionMatrixRows,
         tempReturnData
       );
     }
+
+    console.log("data.dataX", data.dataX);
+    console.log(data["data" + dataToReturn]);
+    console.log("data.row", data.row);
+    console.log("refractionMatrixRows", refractionMatrixRows);
 
     data = {
       dataX: data.dataX,
