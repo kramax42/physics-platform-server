@@ -32,6 +32,7 @@ type startMessageType = {
 
 let getData;
 
+let tempReturnData: number;
 type dataToReturnType = "Ez" | "Hy" | "Hx" | "Energy";
 let dataToReturn: dataToReturnType = "Ez";
 
@@ -72,6 +73,22 @@ wss.on("connection", function connection(ws) {
           case LAB_4_DIFRACTION:
             getData = addon.getFDTD_3D_DIFRACTION;
             dataToReturn = message.dataToReturn;
+            switch (dataToReturn) {
+              case "Ez":
+                tempReturnData = 0;
+                break;
+              case "Hy":
+                tempReturnData = 1;
+                break;
+              case "Hx":
+                tempReturnData = 2;
+                break;
+              case "Energy":
+                tempReturnData = 3;
+                break;
+              default:
+                tempReturnData = 0;
+            }
             break;
         }
         newInterval(true, ws.send.bind(ws));
@@ -100,56 +117,6 @@ const TIME_INTERVAL = 500;
 async function newInterval(reload: boolean, send) {
   intervalId = null;
 
-  ////////////////////
-  const yy1 = [];
-  const n1 = 1;
-  const n2 = 1.3;
-  const Nx: number = 200;
-  const Ny: number = 200;
-
-  for (let i = 0; i < Nx; i++) {
-    yy1.push([]);
-    // Each grid gap.
-    for (let j = 0; j < Ny; j++) {
-      yy1[i].push(n1);
-    }
-  }
-
-  // Difraction grid sizes.
-  const gridWidth = 10;
-  const gridGap = 8;
-
-  // const size_t gridWidth = 5; // temporary value
-  // const size_t gridGap = 3;    // temporary value
-
-  const gridGapCount = Ny / gridGap;
-  // const size_t gridBeginX = 5;
-
-  const gridBeginX = 6;
-  const gridEndX = gridBeginX + gridGap;
-
-  for (let i = gridBeginX; i <= gridEndX; i++) {
-    // Each grid gap.
-    for (let j = 0; j < gridGapCount; j += 2) {
-      for (let k = gridGap * j; k < gridGap * (j + 1); k++) {
-        yy1[i][k] = n2;
-      }
-    }
-  }
-  ////////////////////////
-  // In 3D case.
-
-  const tempMatrix = yy1.flat(); //[1, 1, 1, 1];
-  const tempMatrixSize = Nx; //2;
-  const tempReturnData = 0;
-
-  // let data = await getData(
-  //   condition,
-  //   reload,
-  //   tempMatrix,
-  //   tempMatrixSize,
-  //   tempReturnData
-  // );
   let data = await getData(
     condition,
     reload,
@@ -161,13 +128,6 @@ async function newInterval(reload: boolean, send) {
   const stepsPerInterval = 5;
   intervalId = setInterval(async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
-      // data = await getData(
-      //   condition,
-      //   false,
-      //   tempMatrix,
-      //   tempMatrixSize,
-      //   tempReturnData
-      // );
       data = await getData(
         condition,
         false,
@@ -177,10 +137,10 @@ async function newInterval(reload: boolean, send) {
       );
     }
 
-    console.log("data.dataX", data.dataX);
-    console.log(data["data" + dataToReturn]);
-    console.log("data.row", data.row);
-    console.log("refractionMatrixRows", refractionMatrixRows);
+    // console.log("data.dataX", data.dataX);
+    // console.log(data["data" + dataToReturn]);
+    // console.log("data.row", data.row);
+    // console.log("refractionMatrixRows", refractionMatrixRows);
 
     data = {
       dataX: data.dataX,
