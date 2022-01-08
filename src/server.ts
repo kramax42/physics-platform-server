@@ -26,7 +26,7 @@ let intervalId;
 const startSendingDataInit = (
   message: startMessageType
 ): InitDataObjectType => {
-  
+
   // Unpacking request data.
   const currentDataType: dataType = message.type;
 
@@ -36,31 +36,40 @@ const startSendingDataInit = (
   let dataToReturn: dataToReturnType;
 
   switch (currentDataType) {
+    
     case LAB_1_2D:
       getData = addon.getFdtd2D;
       break;
+
     case LAB_2_3D:
       getData = addon.getFDTD_3D;
       break;
+
     case LAB_3_INTERFERENCE:
       getData = addon.getFDTD_3D_INTERFERENCE;
       break;
+
     case LAB_4_DIFRACTION:
       getData = addon.getFDTD_3D_DIFRACTION;
       dataToReturn = message.dataToReturn;
       switch (dataToReturn) {
+
         case "Ez":
           returnDataNumber = 0;
           break;
+
         case "Hy":
           returnDataNumber = 1;
           break;
+
         case "Hx":
           returnDataNumber = 2;
           break;
+
         case "Energy":
           returnDataNumber = 3;
           break;
+
         default:
           returnDataNumber = 0;
       }
@@ -99,23 +108,25 @@ wss.on("connection", function connection(ws) {
         // Clear previous process.
         clearInterval(intervalId);
         console.log("start sending data");
-
         obj = startSendingDataInit(message);
-
         newInterval(true, ws.send.bind(ws), obj);
         break;
+
       case PAUSE:
         clearInterval(intervalId);
         console.log("pause sending data");
         break;
+
       case CONTINUE:
         newInterval(false, ws.send.bind(ws), obj);
         console.log("continue sending data");
         break;
+
       case CLOSE:
         clearInterval(intervalId);
         console.log("stop sending data | connection closed");
         break;
+
       default:
         clearInterval(intervalId);
         console.log("Wrong request data!");
@@ -141,6 +152,7 @@ async function newInterval(reload: boolean, send, obj?: InitDataObjectType) {
   const stepsPerInterval = 5;
   const reloadInInterval = false;
   intervalId = setInterval(async () => {
+
     for (let j = 0; j < stepsPerInterval; ++j) {
       data = await obj.getData(
         obj.condition,
