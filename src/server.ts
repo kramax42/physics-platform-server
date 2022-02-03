@@ -6,10 +6,9 @@ var addon = require("../../napi-addon-fdtd/build/Release/napi-addon-fdtd.node");
 import { CONTINUE, PAUSE, START, CLOSE } from "../constants/ws-event.constants";
 
 import {
-  LAB_1_2D,
-  LAB_2_3D,
-  LAB_3_INTERFERENCE,
-  LAB_4_DIFRACTION,
+  LAB_2D,
+  LAB_3D,
+  LAB_3D_INTERFERENCE,
 } from "../constants/data-type.constants";
 
 import {
@@ -37,20 +36,39 @@ const startSendingDataInit = (
 
   switch (currentDataType) {
     
-    case LAB_1_2D:
+    case LAB_2D:
       getData = addon.getFdtd2D;
       break;
 
-    case LAB_2_3D:
-      getData = addon.getFDTD_3D;
-      break;
-
-    case LAB_3_INTERFERENCE:
-      getData = addon.getFDTD_3D_INTERFERENCE;
-      break;
-
-    case LAB_4_DIFRACTION:
+    case LAB_3D:
+      console.log("3d!!!!!!!")
       getData = addon.getFDTD_3D_DIFRACTION;
+      dataToReturn = message.dataToReturn;
+      switch (dataToReturn) {
+
+        case "Ez":
+          returnDataNumber = 0;
+          break;
+
+        case "Hy":
+          returnDataNumber = 1;
+          break;
+
+        case "Hx":
+          returnDataNumber = 2;
+          break;
+
+        case "Energy":
+          returnDataNumber = 3;
+          break;
+
+        default:
+          returnDataNumber = 0;
+      }
+      break;
+      case LAB_3D_INTERFERENCE:
+        console.log("INTERFERNCE")
+      getData = addon.getFDTD_3D_INTERFERENCE;
       dataToReturn = message.dataToReturn;
       switch (dataToReturn) {
 
@@ -79,8 +97,8 @@ const startSendingDataInit = (
   return {
     condition: message.condition,
     currentDataType,
-    refractionMatrix: message.matrix.flat(),
-    refractionMatrixRows: message.matrix.length,
+    refractionMatrix: message.matrix?.flat(),
+    refractionMatrixRows: message.matrix?.length,
     returnDataNumber,
     dataToReturn,
     returnDataStr: "data" + dataToReturn,
