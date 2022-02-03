@@ -3,6 +3,8 @@
 const express = require('express');
 const { Server } = require('ws');
 
+var addon = require("./build-addon/Release/napi-addon-fdtd.node");
+
 const PORT = process.env.PORT || 5001;
 const INDEX = '/index.html';
 
