@@ -105,7 +105,7 @@ const startSendingDataInit = (message) => {
 // const wss = new ws.Server({
 //     port,
 // }, () => console.log(`Server started on ${port}`));
-// let obj;
+let obj;
 // Websocket handlers.
 wss.on("connection", function connection(ws) {
     ws.on("message", async function (messageJSON) {
