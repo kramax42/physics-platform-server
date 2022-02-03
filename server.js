@@ -160,3 +160,15 @@ async function newInterval(reload, send, obj) {
         send(JSON.stringify(dataToClient));
     }, TIME_INTERVAL);
 }
+
+
+// const  SERVER_URL="ws://physics-platform-server.herokuapp.com/"
+//     const message = {
+//       event: 'start',
+//       // type: 'DIFRACTION',
+//       dataToReturn: displayedData[currentDisplayingData].type,
+//       condition: [lambda, beamsize, n1, 1.5],
+//       type: '3D',
+//       // condition: [lambda, beamsize, n1],
+//       matrix,
+//     };
