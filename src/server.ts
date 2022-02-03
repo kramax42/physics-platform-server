@@ -1,7 +1,8 @@
 const ws = require("ws");
 
 //const addon = require('napi-addon-fdtd');
-var addon = require("../../napi-addon-fdtd/build/Release/napi-addon-fdtd.node");
+// var addon = require("../../napi-addon-fdtd/build/Release/napi-addon-fdtd.node");
+var addon = require("../build-addon/Release/napi-addon-fdtd.node");
 
 import { CONTINUE, PAUSE, START, CLOSE } from "../constants/ws-event.constants";
 
@@ -18,7 +19,7 @@ import {
   startMessageType,
 } from "../types/types";
 
-const port = 5000;
+const port = 5001;
 
 let intervalId;
 
