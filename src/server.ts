@@ -3,21 +3,82 @@ const ws = require("ws");
 //const addon = require('napi-addon-fdtd');
 // var addon = require("../../napi-addon-fdtd/build/Release/napi-addon-fdtd.node");
 var addon = require("../build-addon/Release/napi-addon-fdtd.node");
+// import * as addon from "../build-addon/Release/napi-addon-fdtd.node";
 
-import { CONTINUE, PAUSE, START, CLOSE } from "../constants/ws-event.constants";
+// import { CONTINUE, PAUSE, START, CLOSE } from "../constants/ws-event.constants";
 
-import {
-  LAB_2D,
-  LAB_3D,
-  LAB_3D_INTERFERENCE,
-} from "../constants/data-type.constants";
 
-import {
-  dataToReturnType,
-  dataType,
-  InitDataObjectType,
-  startMessageType,
-} from "../types/types";
+ const START = 'start';
+ const PAUSE = 'pause';
+ const CONTINUE = 'continue';
+ const CLOSE = 'close';
+
+// import {
+//   LAB_2D,
+//   LAB_3D,
+//   LAB_3D_INTERFERENCE,
+// } from "../constants/data-type.constants";
+
+// import {
+//   dataToReturnType,
+//   dataType,
+//   InitDataObjectType,
+//   startMessageType,
+// } from "../types/types";
+
+
+ type dataType = "2D" | "3D" | "INTERFERENCE" | "DIFRACTION";
+ type eventType = "start" | "pause" | "continue" | "close";
+
+ type dataToReturnType = "Ez" | "Hy" | "Hx" | "Energy";
+
+ type startMessageType = {
+  event: eventType;
+  type: dataType;
+  dataToReturn: dataToReturnType;
+  condition: number[];
+  matrix: number[][];
+};
+
+ type ReturnObjAddonType = {
+  dataX: number[][];
+  dataY: number[][];
+  dataEz?: number[][];
+  dataHy?: number[][];
+  dataHx?: number[][];
+  currentTick: number;
+  row: number;
+  col: number;
+};
+
+ type GetDataType = (
+  condition: number[],
+  reload: boolean,
+  refractionMatrix: number[],
+  refractionMatrixRows: number,
+  returnDataNumber: number
+) => ReturnObjAddonType;
+
+ type InitDataObjectType = {
+  condition: number[];
+  returnDataNumber: number;
+  currentDataType: dataType;
+  refractionMatrix: number[];
+  dataToReturn: dataToReturnType;
+  returnDataStr: string;
+  getData: GetDataType;
+  refractionMatrixRows: number;
+};
+
+
+
+
+ const LAB_2D = '2D';
+ const LAB_3D = '3D';
+ const LAB_3D_INTERFERENCE = 'INTERFERENCE';
+
+
+
 
 const port = process.env.PORT || 5001;
 
