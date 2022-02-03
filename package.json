@@ -4,6 +4,7 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
+    "start": "node ./src/server.js",
     "dev": "nodemon -e ts -w ./src -x npm run watch:serve",
     "watch:serve": "ts-node src/server.ts"
   },
