@@ -19,7 +19,7 @@ import {
   startMessageType,
 } from "../types/types";
 
-const port = 5001;
+const port = process.env.PORT || 5001;
 
 let intervalId;
 
