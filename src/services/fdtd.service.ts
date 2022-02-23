@@ -160,11 +160,12 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
   };
   
   
-  function sleep(ms) {  return new Promise((resolve) => {
+function sleep(ms) {
+    return new Promise((resolve) => {
         setTimeout(resolve, ms);
-        });}
+    });
+}
   
-
 
 async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   clearInterval(intervalId);
@@ -185,8 +186,6 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   const stepsPerInterval = 5;
   const reloadInInterval = false;
   intervalId = setInterval(async () => {
-
-   
 
     const calculateAndSendNextLayer = async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
@@ -218,8 +217,6 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   calculateAndSendNextLayer();
   }, TIME_INTERVAL_3D);
 }
-
-
 
 
 async function newInterval2D(reload: boolean, send, condition: number[]) {
