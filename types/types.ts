@@ -9,6 +9,7 @@ export type startMessageType = {
   dataToReturn: dataToReturnType;
   condition: number[];
   matrix: number[][];
+
 };
 
 export type ReturnObjAddonType = {

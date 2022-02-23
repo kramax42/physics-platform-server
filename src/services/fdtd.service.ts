@@ -1,9 +1,10 @@
 import * as WebSocket from 'ws';
+import * as addon from 'napi-addon-fdtd';
+
 import { LAB_2D, LAB_3D, LAB_3D_INTERFERENCE } from '../../constants/data-type.constants';
 import { CLOSE, CONTINUE, PAUSE, START } from '../../constants/ws-event.constants';
 import { dataToReturnType, dataType, InitDataObjectType, startMessageType } from '../../types/types';
 
-import * as addon from 'napi-addon-fdtd';
 
 let intervalId;
 let obj: InitDataObjectType;
@@ -16,11 +17,13 @@ type sendType = {
 
 let newInterval: any;     
 
-export async function onMessage (messageJSON: WebSocket.Data, send: sendType): Promise<void> {
-    // const message: startMessageType = JSON.parse(messageJSON.toString());
+type stepMessageType = {step: number};
 
-    const message = JSON.parse(messageJSON.toString());
-    if(message.event) {
+export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): Promise<void> => {
+    const message: startMessageType | stepMessageType = JSON.parse(messageJSON.toString());
+
+    // const message = JSON.parse(messageJSON.toString());
+    if("event" in message) {
     switch (message.event) {
       case START:
         // Clear previous process.
@@ -29,8 +32,10 @@ export async function onMessage (messageJSON: WebSocket.Data, send: sendType): P
         obj = startSendingDataInit(message);
         lastClientReceivedStep = 0;
         lastServerSendedStep = 0;
-
-        newInterval(true, send, obj);
+        message.type !== '2D' 
+          ? newInterval3D(true, send, obj)
+          : newInterval2D(true, send, message.condition)
+        
         break;
 
       case PAUSE:
@@ -39,7 +44,10 @@ export async function onMessage (messageJSON: WebSocket.Data, send: sendType): P
         break;
 
       case CONTINUE:
-        newInterval(false, send, obj);
+        // newInterval(false, send, obj);
+        message.type !== '2D' 
+          ? newInterval3D(false, send, obj)
+          : newInterval2D(false, send, message.condition)
         console.log("continue sending data");
         break;
 
@@ -53,7 +61,7 @@ export async function onMessage (messageJSON: WebSocket.Data, send: sendType): P
         console.log("Wrong request data!");
     }
   }
-  else if (message.step) {
+  else if ("step" in message) {
     lastClientReceivedStep = (message.step) || 0;
     console.log('~~~~~~~~~~~~~~~')
     console.log("~~clientStep---", lastClientReceivedStep);
@@ -80,7 +88,7 @@ export async function onMessage (messageJSON: WebSocket.Data, send: sendType): P
       case LAB_2D:
         console.log("2d!!!!!!!")
         getData = addon.getFdtd2D;
-        newInterval = newInterval3D;
+        // newInterval = newInterval2D;
         break;
   
       case LAB_3D:
@@ -156,11 +164,14 @@ export async function onMessage (messageJSON: WebSocket.Data, send: sendType): P
         setTimeout(resolve, ms);
         });}
   
-// Milliseconds.
-const TIME_INTERVAL = 450;
+
 
 async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
-  intervalId = null;
+  clearInterval(intervalId);
+
+  // Milliseconds.
+  const TIME_INTERVAL_3D = 450;
+  const SLEEP_TIME = 300;
 
   // Initial data request.
   let data = await obj.getData(
@@ -201,35 +212,38 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   }
 
   // Waiting for synchronization between server and clent.
-  while(lastClientReceivedStep !== lastServerSendedStep) {
-    // if(lastClientReceivedStep !== lastServerSendedStep) {
-      sleep(300);
+  while(lastClientReceivedStep < lastServerSendedStep) {
+      sleep(SLEEP_TIME);
   } 
   calculateAndSendNextLayer();
-  }, TIME_INTERVAL);
+  }, TIME_INTERVAL_3D);
 }
 
 
+
+
 async function newInterval2D(reload: boolean, send, condition: number[]) {
-    intervalId = null;
+    clearInterval(intervalId);
   
+    const TIME_INTERVAL_2D = 70;
     // Initial data request.
-    let data = await addon.getData(
+    let data = await addon.getFdtd2D(
       condition,
       reload
     );
   
-    const stepsPerInterval = 2;
+    const stepsPerInterval = 1;
     const reloadInInterval = false;
     intervalId = setInterval(async () => {
   
       for (let j = 0; j < stepsPerInterval; ++j) {
-        data = await addon.getData(
+        data = await addon.getFdtd2D(
             condition,
-            reload
+            reloadInInterval
           );
       }
   
+      lastServerSendedStep = data.currentTick;
       const dataToClient = {
         dataX: data.dataX,
         dataY: data.dataY,
@@ -237,5 +251,5 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
         col: data.col,
       };
       send(JSON.stringify(dataToClient));
-    }, 300);
+    }, TIME_INTERVAL_2D);
   }
