@@ -15,10 +15,9 @@ app.get('/', (req,res) => res.send((`<pre>
 LabName:        Params:
 ------------------------------------------------------------------
 
-2D:             ( [lambda, tau, refractive_index], reload )
-3D:             ( [lambda, tau, beamsize], reload )
-INTERFERENCE:   ( [lambda, tau, beamsize], reload )
-DIFRACTION:     ( [lambda, tau, beamsize], reload, matrix, matrixSize, dataReturnType ) -- 4 - data return type('Ez' = 0 | 'Hy' = 1 |'Hx' = 2 |'Energy' = 3)
+getData2D:             ( [lambda, tau, refractive_index], reload )
+INTERFERENCE:   ( [lambda, beamsize], reload )
+getData3D:     ( [lambda, beamsize], reload, matrix, matrixSize, dataReturnType ) -- 4 - data return type('Ez' = 0 | 'Hy' = 1 |'Hx' = 2 |'Energy' = 3)
 --------------------------------------------------------------
 
 synchronize step:    ( step: number )

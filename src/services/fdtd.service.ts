@@ -15,8 +15,6 @@ type sendType = {
     data: any;
      cb?: (err?: Error) => void}
 
-let newInterval: any;     
-
 type stepMessageType = {step: number};
 
 export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): Promise<void> => {
@@ -62,13 +60,12 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
     }
   }
   else if ("step" in message) {
-    lastClientReceivedStep = (message.step) || 0;
-    console.log('~~~~~~~~~~~~~~~')
-    console.log("~~clientStep---", lastClientReceivedStep);
-    console.log("serverStep---", lastServerSendedStep);
+      lastClientReceivedStep = (message.step) || 0;
+      console.log('~~~~~~~~~~~~~~~')
+      console.log("~~clientStep---", lastClientReceivedStep);
+      console.log("serverStep---", lastServerSendedStep);
+    }
   }
-  }
-
 
 
   const startSendingDataInit = (
@@ -87,15 +84,14 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       
       case LAB_2D:
         console.log("2d!!!!!!!")
-        getData = addon.getFdtd2D;
+        getData = addon.getData2D;
         // newInterval = newInterval2D;
         break;
   
       case LAB_3D:
         console.log("3d!!!!!!!")
-        getData = addon.getFDTD_3D_DIFRACTION;
+        getData = addon.getData3D;
         dataToReturn = message.dataToReturn;
-        newInterval = newInterval3D
         switch (dataToReturn) {
   
           case "Ez":
@@ -122,7 +118,6 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
           console.log("INTERFERNCE")
         getData = addon.getFDTD_3D_INTERFERENCE;
         dataToReturn = message.dataToReturn;
-        newInterval = newInterval3D
         switch (dataToReturn) {
   
           case "Ez":
@@ -146,7 +141,6 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
         }
         break;
     }
-  
     return {
       condition: message.condition,
       currentDataType,
@@ -223,8 +217,11 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
     clearInterval(intervalId);
   
     const TIME_INTERVAL_2D = 70;
+
+    const getData = addon.getData2D;
+
     // Initial data request.
-    let data = await addon.getFdtd2D(
+    let data = await getData(
       condition,
       reload
     );
@@ -234,7 +231,7 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
     intervalId = setInterval(async () => {
   
       for (let j = 0; j < stepsPerInterval; ++j) {
-        data = await addon.getFdtd2D(
+        data = await getData(
             condition,
             reloadInInterval
           );
