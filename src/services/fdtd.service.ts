@@ -240,7 +240,7 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
       lastServerSendedStep = data.currentTick;
       const dataToClient = {
         dataX: data.dataX,
-        dataY: data.dataY,
+        dataY: data.dataHy,
         step: data.currentTick,
         col: data.col,
       };
