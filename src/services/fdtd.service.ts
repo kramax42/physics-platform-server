@@ -32,7 +32,7 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
         lastServerSendedStep = 0;
         message.type !== '2D' 
           ? newInterval3D(true, send, obj)
-          : newInterval2D(true, send, message.condition)
+          : newInterval2D(true, send, obj)
         
         break;
 
@@ -45,7 +45,7 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
         // newInterval(false, send, obj);
         message.type !== '2D' 
           ? newInterval3D(false, send, obj)
-          : newInterval2D(false, send, message.condition)
+          : newInterval2D(false, send, obj)
         console.log("continue sending data");
         break;
 
@@ -91,33 +91,14 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       case LAB_3D:
         console.log("3d!!!!!!!")
         getData = addon.getData3D;
-        dataToReturn = message.dataToReturn;
-        switch (dataToReturn) {
-  
-          case "Ez":
-            returnDataNumber = 0;
-            break;
-  
-          case "Hy":
-            returnDataNumber = 1;
-            break;
-  
-          case "Hx":
-            returnDataNumber = 2;
-            break;
-  
-          case "Energy":
-            returnDataNumber = 3;
-            break;
-  
-          default:
-            returnDataNumber = 0;
-        }
         break;
         case LAB_3D_INTERFERENCE:
           console.log("INTERFERNCE")
         getData = addon.getFDTD_3D_INTERFERENCE;
-        dataToReturn = message.dataToReturn;
+        break;
+    }
+
+    dataToReturn = message.dataToReturn;
         switch (dataToReturn) {
   
           case "Ez":
@@ -139,13 +120,13 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
           default:
             returnDataNumber = 0;
         }
-        break;
-    }
+
+
     return {
       condition: message.condition,
       currentDataType,
       refractionMatrix: message.matrix?.flat(),
-      refractionMatrixRows: message.matrix?.length,
+      refractionMatrixRows: message.matrix?.flat().length,
       returnDataNumber,
       dataToReturn,
       returnDataStr: "data" + dataToReturn,
@@ -169,7 +150,7 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   const SLEEP_TIME = 300;
 
   // Initial data request.
-  let data = await obj.getData(
+  let data =  obj.getData(
     obj.condition,
     reload,
     obj.refractionMatrix,
@@ -183,7 +164,7 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
 
     const calculateAndSendNextLayer = async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
-      data = await obj.getData(
+      data =  obj.getData(
         obj.condition,
         reloadInInterval,
         obj.refractionMatrix,
@@ -213,9 +194,12 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
 }
 
 
-async function newInterval2D(reload: boolean, send, condition: number[]) {
+async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
     clearInterval(intervalId);
   
+    console.log(obj)
+
+
     const TIME_INTERVAL_2D = 70;
 
     const eps0 = 4.85418e-12;
@@ -228,10 +212,11 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
 
     // Initial data request.
     let data = await getData(
-      condition,
+      obj.condition || [1,10,1],
       reload,
-      epsilonVector,
-      epsilonVectorSize,
+      obj.refractionMatrix,
+      obj.refractionMatrixRows,
+      // obj.returnDataNumber
     );
   
     const stepsPerInterval = 1;
@@ -241,10 +226,10 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
   
       for (let j = 0; j < stepsPerInterval; ++j) {
         data = await getData(
-            condition,
-            reloadInInterval,
-            epsilonVector,
-            epsilonVectorSize ,
+          obj.condition,
+          reloadInInterval,
+          obj.refractionMatrix || epsilonVector,
+          obj.refractionMatrixRows || epsilonVectorSize,
           );
       }
   
