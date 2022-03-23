@@ -218,22 +218,33 @@ async function newInterval2D(reload: boolean, send, condition: number[]) {
   
     const TIME_INTERVAL_2D = 70;
 
+    const eps0 = 4.85418e-12;
+    const epsilonVectorSize = 8;
+    const epsilonVector = Array(epsilonVectorSize).fill(eps0);
+    epsilonVector[4] = eps0*3;
+    epsilonVector[6] = eps0*3;
+
     const getData = addon.getData2D;
 
     // Initial data request.
     let data = await getData(
       condition,
-      reload
+      reload,
+      epsilonVector,
+      epsilonVectorSize,
     );
   
     const stepsPerInterval = 1;
     const reloadInInterval = false;
+    
     intervalId = setInterval(async () => {
   
       for (let j = 0; j < stepsPerInterval; ++j) {
         data = await getData(
             condition,
-            reloadInInterval
+            reloadInInterval,
+            epsilonVector,
+            epsilonVectorSize ,
           );
       }
   
