@@ -9,7 +9,7 @@ export type startMessageType = {
   dataToReturn: dataToReturnType;
   condition: number[];
   matrix: number[][];
-
+  sourcePositionRelative: {x: number, y: number};
 };
 
 export type ReturnObjAddonType = {
@@ -40,4 +40,5 @@ export type InitDataObjectType = {
   returnDataStr: string;
   getData: GetDataType;
   refractionMatrixRows: number;
+  sourcePositionRelative: {x: number, y: number};
 };

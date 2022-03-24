@@ -79,6 +79,10 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
   
     let getData;
     let dataToReturn: dataToReturnType;
+
+    let refractionMatrixRows;
+
+    // const sourcePositionRelateive = message.
   
     switch (currentDataType) {
       
@@ -86,15 +90,18 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
         console.log("2d!!!!!!!")
         getData = addon.getData2D;
         // newInterval = newInterval2D;
+        refractionMatrixRows = message.matrix?.flat().length;
         break;
   
       case LAB_3D:
         console.log("3d!!!!!!!")
         getData = addon.getData3D;
+        refractionMatrixRows = message.matrix?.length;
         break;
         case LAB_3D_INTERFERENCE:
           console.log("INTERFERNCE")
         getData = addon.getFDTD_3D_INTERFERENCE;
+        refractionMatrixRows = message.matrix?.length;
         break;
     }
 
@@ -126,11 +133,12 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       condition: message.condition,
       currentDataType,
       refractionMatrix: message.matrix?.flat(),
-      refractionMatrixRows: message.matrix?.flat().length,
+      refractionMatrixRows,
       returnDataNumber,
       dataToReturn,
       returnDataStr: "data" + dataToReturn,
       getData,
+      sourcePositionRelative: message.sourcePositionRelative || {x: 0, y:0},
     };
   };
   
@@ -149,6 +157,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   const TIME_INTERVAL_3D = 450;
   const SLEEP_TIME = 300;
 
+  console.log(obj)
+  
   // Initial data request.
   let data =  obj.getData(
     obj.condition,
@@ -197,8 +207,6 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
 async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
     clearInterval(intervalId);
   
-    console.log(obj)
-
 
     const TIME_INTERVAL_2D = 70;
 
@@ -210,12 +218,18 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
 
     const getData = addon.getData2D;
 
+
+    const sourcePosition = obj.sourcePositionRelative.x || 0;
+
+    console.log(sourcePosition);
+    
     // Initial data request.
     let data = await getData(
       obj.condition || [1,10,1],
       reload,
       obj.refractionMatrix,
       obj.refractionMatrixRows,
+      sourcePosition,
       // obj.returnDataNumber
     );
   
@@ -228,8 +242,9 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
         data = await getData(
           obj.condition,
           reloadInInterval,
-          obj.refractionMatrix || epsilonVector,
-          obj.refractionMatrixRows || epsilonVectorSize,
+          obj.refractionMatrix,
+          obj.refractionMatrixRows,
+          sourcePosition,
           );
       }
   
