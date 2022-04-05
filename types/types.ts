@@ -9,7 +9,8 @@ export type startMessageType = {
   dataToReturn: dataToReturnType;
   condition: number[];
   matrix: number[][];
-  sourcePositionRelative: {x: number, y: number};
+  omegaMatrix: number[][]; 
+  sourcePositionRelative: { x: number, y: number };
 };
 
 export type ReturnObjAddonType = {
@@ -28,7 +29,8 @@ export type GetDataType = (
   reload: boolean,
   refractionMatrix: number[],
   refractionMatrixRows: number,
-  returnDataNumber: number
+  returnDataNumber: number,
+  omegaMatrix: number[],
 ) => ReturnObjAddonType;
 
 export type InitDataObjectType = {
@@ -36,6 +38,7 @@ export type InitDataObjectType = {
   returnDataNumber: number;
   currentDataType: dataType;
   refractionMatrix: number[];
+  omegaMatrix: number[];
   dataToReturn: dataToReturnType;
   returnDataStr: string;
   getData: GetDataType;

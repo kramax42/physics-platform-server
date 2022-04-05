@@ -133,6 +133,7 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       condition: message.condition,
       currentDataType,
       refractionMatrix: message.matrix?.flat(),
+      omegaMatrix: message.omegaMatrix?.flat(),
       refractionMatrixRows,
       returnDataNumber,
       dataToReturn,
@@ -165,7 +166,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
     reload,
     obj.refractionMatrix,
     obj.refractionMatrixRows,
-    obj.returnDataNumber
+    obj.returnDataNumber,
+    obj.omegaMatrix,
   );
 
   const stepsPerInterval = 5;
@@ -179,7 +181,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
         reloadInInterval,
         obj.refractionMatrix,
         obj.refractionMatrixRows,
-        obj.returnDataNumber
+        obj.returnDataNumber,
+        obj.omegaMatrix,
       );
     }
 
@@ -219,9 +222,9 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
     const getData = addon.getData2D;
 
 
-    const sourcePosition = obj.sourcePositionRelative.x || 0;
+    const sourcePosition = [obj.sourcePositionRelative.x || 0, 0.5];
 
-    console.log(sourcePosition);
+    //  console.log(sourcePosition);
     
     // Initial data request.
     let data = await getData(
@@ -230,6 +233,7 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
       obj.refractionMatrix,
       obj.refractionMatrixRows,
       sourcePosition,
+      obj.omegaMatrix,
       // obj.returnDataNumber
     );
   
@@ -245,6 +249,7 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
           obj.refractionMatrix,
           obj.refractionMatrixRows,
           sourcePosition,
+          obj.omegaMatrix,
           );
       }
   
