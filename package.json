@@ -5,8 +5,8 @@
   "main": "src/server.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node ./dist/src/server.js",
-    "dev": "nodemon -e ts -w ./src -x npm run watch:serve",
+    "start": "NODE_ENV=production node ./dist/src/server.js",
+    "dev": "NODE_ENV=development nodemon -e ts -w ./src -x npm run watch:serve",
     "watch:serve": "ts-node src/server.ts"
   },
   "author": "",

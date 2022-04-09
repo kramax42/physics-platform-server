@@ -23,7 +23,7 @@ getData3D:     ( [lambda, beamsize], reload, matrix, matrixSize, dataReturnType 
 synchronize step:    ( step: number )
 </pre>`)))
 
-const httpServer: http.Server = app.listen(port, () => console.log(`Server started on ${port}`))
+const httpServer: http.Server = app.listen(port, () => console.log(`Server started on ${port} in ${process.env.NODE_ENV} mode`))
 
 // Websocket server entry point.
 const wsServer = new WebSocket.Server(
