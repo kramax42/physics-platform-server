@@ -19,6 +19,8 @@ export type ReturnObjAddonType = {
   dataEz?: number[][];
   dataHy?: number[][];
   dataHx?: number[][];
+  max: number;
+  min: number;
   currentTick: number;
   row: number;
   col: number;

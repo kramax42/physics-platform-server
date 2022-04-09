@@ -186,6 +186,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
       );
     }
 
+    // console.log(data.max,data.min)
+
     lastServerSendedStep = data.currentTick;
     const dataToClient = {
       dataX: data.dataX,
@@ -194,6 +196,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
       step: data.currentTick,
       row: data.row,
       col: data.col,
+      max: data.max,
+      min: data.min,
     };
     send(JSON.stringify(dataToClient));
   }
