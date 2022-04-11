@@ -155,10 +155,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   clearInterval(intervalId);
 
   // Milliseconds.
-  const TIME_INTERVAL_3D = 450;
+  const TIME_INTERVAL_3D = 750;
   const SLEEP_TIME = 300;
-
-  console.log(obj)
   
   // Initial data request.
   let data =  obj.getData(
@@ -170,7 +168,7 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
     obj.omegaMatrix,
   );
 
-  const stepsPerInterval = 5;
+  const stepsPerInterval = 4;
   const reloadInInterval = false;
   intervalId = setInterval(async () => {
 
@@ -185,8 +183,6 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
         obj.omegaMatrix,
       );
     }
-
-    // console.log(data.max,data.min)
 
     lastServerSendedStep = data.currentTick;
     const dataToClient = {
@@ -214,22 +210,18 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
 async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
     clearInterval(intervalId);
   
+    const TIME_INTERVAL_2D = 300;
 
-    const TIME_INTERVAL_2D = 70;
-
-    const eps0 = 4.85418e-12;
-    const epsilonVectorSize = 8;
-    const epsilonVector = Array(epsilonVectorSize).fill(eps0);
-    epsilonVector[4] = eps0*3;
-    epsilonVector[6] = eps0*3;
+    // const eps0 = 4.85418e-12;
+    // const epsilonVectorSize = 8;
+    // const epsilonVector = Array(epsilonVectorSize).fill(eps0);
+    // epsilonVector[4] = eps0*3;
+    // epsilonVector[6] = eps0*3;
 
     const getData = addon.getData2D;
 
-
     const sourcePosition = [obj.sourcePositionRelative.x || 0, 0.5];
-
-    //  console.log(sourcePosition);
-    
+  
     // Initial data request.
     let data = await getData(
       obj.condition || [1,10,1],
@@ -241,7 +233,7 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
       // obj.returnDataNumber
     );
   
-    const stepsPerInterval = 1;
+    const stepsPerInterval = 8;
     const reloadInInterval = false;
     
     intervalId = setInterval(async () => {
