@@ -6,6 +6,12 @@ import { CLOSE, CONTINUE, PAUSE, START } from '../../constants/ws-event.constant
 import { dataToReturnType, dataType, InitDataObjectType, startMessageType } from '../../types/types';
 
 
+function testMemoryUsage() {
+  const used = process.memoryUsage().heapUsed / 1024 / 1024;
+  console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+}
+
+
 let intervalId;
 let obj: InitDataObjectType;
 let lastClientReceivedStep = 0;
@@ -16,6 +22,7 @@ type sendType = {
      cb?: (err?: Error) => void}
 
 type stepMessageType = {step: number};
+
 
 export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): Promise<void> => {
     const message: startMessageType | stepMessageType = JSON.parse(messageJSON.toString());
@@ -155,8 +162,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   clearInterval(intervalId);
 
   // Milliseconds.
-  const TIME_INTERVAL_3D = 750;
-  const SLEEP_TIME = 300;
+  const TIME_INTERVAL_3D = 2000;
+  const SLEEP_TIME = 500;
   
   // Initial data request.
   let data =  obj.getData(
@@ -168,7 +175,7 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
     obj.omegaMatrix,
   );
 
-  const stepsPerInterval = 4;
+  const stepsPerInterval = 10;
   const reloadInInterval = false;
   intervalId = setInterval(async () => {
 
@@ -195,6 +202,7 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
       max: data.max,
       min: data.min,
     };
+    testMemoryUsage()
     send(JSON.stringify(dataToClient));
   }
 
