@@ -5,15 +5,17 @@ import { LAB_2D, LAB_3D, LAB_3D_INTERFERENCE } from '../../constants/data-type.c
 import { CLOSE, CONTINUE, PAUSE, START } from '../../constants/ws-event.constants';
 import { dataToReturnType, dataType, InitDataObjectType, startMessageType } from '../../types/types';
 
+let memoryAll = 0;
 
 function testMemoryUsage() {
   const used = process.memoryUsage().heapUsed / 1024 / 1024;
+  memoryAll += used;
   console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+  console.log(`all memory ${memoryAll} MB`);
 }
 
 
 let intervalId;
-let obj: InitDataObjectType;
 let lastClientReceivedStep = 0;
 let lastServerSendedStep = 0;
 
@@ -26,6 +28,8 @@ type stepMessageType = {step: number};
 
 export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): Promise<void> => {
     const message: startMessageType | stepMessageType = JSON.parse(messageJSON.toString());
+
+    let obj: InitDataObjectType;
 
     // const message = JSON.parse(messageJSON.toString());
     if("event" in message) {
@@ -152,8 +156,11 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
   
   
 function sleep(ms) {
+    let timeoutId;
     return new Promise((resolve) => {
-        setTimeout(resolve, ms);
+        timesetTimeout(resolve, ms);
+    }).then(() => {
+      clearTimeout()
     });
 }
   
