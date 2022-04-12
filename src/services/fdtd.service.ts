@@ -5,6 +5,10 @@ import { LAB_2D, LAB_3D, LAB_3D_INTERFERENCE } from '../../constants/data-type.c
 import { CLOSE, CONTINUE, PAUSE, START } from '../../constants/ws-event.constants';
 import { dataToReturnType, dataType, InitDataObjectType, startMessageType } from '../../types/types';
 
+var os = require('os');
+
+
+
 let memoryAll = 0;
 
 function testMemoryUsage() {
@@ -12,6 +16,10 @@ function testMemoryUsage() {
   memoryAll += used;
   console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
   console.log(`all memory ${memoryAll} MB`);
+  console.log(`Free mem ${Math.round(os.freemem() * 100) / 100} MB`);
+  console.log(`Total mem ${Math.round(os.totalmem() * 100) / 100} MB`);
+  
+
 }
 
 
@@ -158,9 +166,9 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
 function sleep(ms) {
     let timeoutId;
     return new Promise((resolve) => {
-        timesetTimeout(resolve, ms);
+        timeoutId = setTimeout(resolve, ms);
     }).then(() => {
-      clearTimeout()
+      clearTimeout(timeoutId)
     });
 }
   
