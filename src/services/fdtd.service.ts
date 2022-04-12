@@ -163,13 +163,12 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
   };
   
   
-function sleep(ms) {
-    let timeoutId;
-    return new Promise((resolve) => {
-        timeoutId = setTimeout(resolve, ms);
-    }).then(() => {
-      clearTimeout(timeoutId)
-    });
+async function sleep(ms: number) {
+    let timeoutId: NodeJS.Timeout;
+    await new Promise((resolve) => {
+    timeoutId = setTimeout(resolve, ms);
+  });
+  clearTimeout(timeoutId);
 }
   
 
