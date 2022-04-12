@@ -218,7 +218,7 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
 async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
     clearInterval(intervalId);
   
-    const TIME_INTERVAL_2D = 300;
+    const TIME_INTERVAL_2D = 500;
 
     // const eps0 = 4.85418e-12;
     // const epsilonVectorSize = 8;
@@ -241,7 +241,7 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
       // obj.returnDataNumber
     );
   
-    const stepsPerInterval = 8;
+    const stepsPerInterval = 10;
     const reloadInInterval = false;
     
     intervalId = setInterval(async () => {
@@ -264,6 +264,7 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
         step: data.currentTick,
         col: data.col,
       };
+      testMemoryUsage()
       send(JSON.stringify(dataToClient));
     }, TIME_INTERVAL_2D);
   }
