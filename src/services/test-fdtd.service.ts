@@ -54,8 +54,8 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send): Promise<voi
         let data = addon.getData3D(condition, reload, [1,2,1,1], 2, 0);
       
         // Milliseconds.
-        const TIME_INTERVAL_3D = 1000;
-        const stepsPerInterval = 5;
+        const TIME_INTERVAL_3D = 500;
+        const stepsPerInterval = 8;
         intervalId = setInterval(async () => {
 
         reload = false;
