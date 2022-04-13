@@ -4,7 +4,7 @@ import express from 'express';
 import * as http from "http"
 
 
-import { onMessage } from './services/test-fdtd.service';
+import { onMessage } from './services/fdtd.service';
  
 const port = process.env.PORT || 5001;
 

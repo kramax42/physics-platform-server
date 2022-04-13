@@ -43,7 +43,6 @@ export type InitDataObjectType = {
   omegaMatrix: number[];
   dataToReturn: dataToReturnType;
   returnDataStr: string;
-  getData: GetDataType;
   refractionMatrixRows: number;
   sourcePositionRelative: {x: number, y: number};
 };

@@ -13,11 +13,10 @@ let memoryAll = 0;
 
 function testMemoryUsage() {
   const used = process.memoryUsage().heapUsed / 1024 / 1024;
-  memoryAll += used;
   console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
-  console.log(`all memory ${memoryAll} MB`);
-  console.log(`Free mem ${Math.round(os.freemem() * 100) / 100} MB`);
-  console.log(`Total mem ${Math.round(os.totalmem() * 100) / 100} MB`);
+  // console.log(`all memory ${memoryAll} MB`);
+  // console.log(`Free mem ${Math.round(os.freemem() * 100) / 100} MB`);
+  // console.log(`Total mem ${Math.round(os.totalmem() * 100) / 100} MB`);
   
 
 }
@@ -82,7 +81,7 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       lastClientReceivedStep = (message.step) || 0;
       console.log('~~~~~~~~~~~~~~~')
       console.log("~~clientStep---", lastClientReceivedStep);
-      console.log("serverStep---", lastServerSendedStep);
+      console.log("**serverStep---", lastServerSendedStep);
     }
   }
 
@@ -96,7 +95,6 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
   
     let returnDataNumber: number;
   
-    let getData;
     let dataToReturn: dataToReturnType;
 
     let refractionMatrixRows;
@@ -107,19 +105,16 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       
       case LAB_2D:
         console.log("2d!!!!!!!")
-        getData = addon.getData2D;
-        // newInterval = newInterval2D;
         refractionMatrixRows = message.matrix?.flat().length;
         break;
   
       case LAB_3D:
         console.log("3d!!!!!!!")
-        getData = addon.getData3D;
         refractionMatrixRows = message.matrix?.length;
         break;
-        case LAB_3D_INTERFERENCE:
-          console.log("INTERFERNCE")
-        getData = addon.getFDTD_3D_INTERFERENCE;
+
+      case LAB_3D_INTERFERENCE:
+        console.log("INTERFERNCE")
         refractionMatrixRows = message.matrix?.length;
         break;
     }
@@ -157,7 +152,6 @@ export const onMessage  = async (messageJSON: WebSocket.Data, send: sendType): P
       returnDataNumber,
       dataToReturn,
       returnDataStr: "data" + dataToReturn,
-      getData,
       sourcePositionRelative: message.sourcePositionRelative || {x: 0, y:0},
     };
   };
@@ -176,11 +170,13 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   clearInterval(intervalId);
 
   // Milliseconds.
-  const TIME_INTERVAL_3D = 2000;
+  const TIME_INTERVAL_3D = 1000;
   const SLEEP_TIME = 500;
   
+  
+
   // Initial data request.
-  let data =  obj.getData(
+  let data = addon.getData3D(
     obj.condition,
     reload,
     obj.refractionMatrix,
@@ -189,13 +185,13 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
     obj.omegaMatrix,
   );
 
-  const stepsPerInterval = 10;
+  const stepsPerInterval = 5;
   const reloadInInterval = false;
   intervalId = setInterval(async () => {
 
     const calculateAndSendNextLayer = async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
-      data =  obj.getData(
+      data = addon.getData3D(
         obj.condition,
         reloadInInterval,
         obj.refractionMatrix,
@@ -221,7 +217,8 @@ async function newInterval3D(reload: boolean, send, obj?: InitDataObjectType) {
   }
 
   // Waiting for synchronization between server and clent.
-  while(lastClientReceivedStep < lastServerSendedStep) {
+  // while
+  if(lastClientReceivedStep < lastServerSendedStep) {
       sleep(SLEEP_TIME);
   } 
   calculateAndSendNextLayer();
@@ -234,18 +231,10 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
   
     const TIME_INTERVAL_2D = 500;
 
-    // const eps0 = 4.85418e-12;
-    // const epsilonVectorSize = 8;
-    // const epsilonVector = Array(epsilonVectorSize).fill(eps0);
-    // epsilonVector[4] = eps0*3;
-    // epsilonVector[6] = eps0*3;
-
-    const getData = addon.getData2D;
-
     const sourcePosition = [obj.sourcePositionRelative.x || 0, 0.5];
   
     // Initial data request.
-    let data = await getData(
+    let data = addon.getData2D(
       obj.condition || [1,10,1],
       reload,
       obj.refractionMatrix,
@@ -261,7 +250,7 @@ async function newInterval2D(reload: boolean, send, obj: InitDataObjectType) {
     intervalId = setInterval(async () => {
   
       for (let j = 0; j < stepsPerInterval; ++j) {
-        data = await getData(
+        data = addon.getData2D(
           obj.condition,
           reloadInInterval,
           obj.refractionMatrix,
