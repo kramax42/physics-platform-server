@@ -3,9 +3,7 @@
 # dependencies
 /node_modules
 /dist
-
-.idea
-.idea/
+/.clinic
 
 # misc
 .DS_Store
