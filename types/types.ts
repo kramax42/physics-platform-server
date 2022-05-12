@@ -1,16 +1,31 @@
-export type dataType = "2D" | "3D" | "INTERFERENCE" | "DIFRACTION";
-export type eventType = "start" | "pause" | "continue" | "close";
+export type DataDimension = "1D" | "2D";
+export type EventType = "start" | "pause" | "continue" | "close";
+export type DataToReturn = "Ez" | "Hy" | "Hx" | "Energy";
 
-export type dataToReturnType = "Ez" | "Hy" | "Hx" | "Energy";
 
-export type startMessageType = {
-  event: eventType;
-  type: dataType;
-  dataToReturn: dataToReturnType;
-  condition: number[];
-  matrix: number[][];
-  omegaMatrix: number[][]; 
-  sourcePositionRelative: { x: number, y: number };
+export type Material = {
+  // name: string;
+  // color: string;
+  id: number;
+  eps: number;    // Electric permittivity.
+  mu: number;     // Permeability.
+  sigma: number;  // Conductivity.
+};
+
+type SourcePosition = {
+  x: number;
+  y: number;
+}
+
+export type MessageFromClient = {
+  event: EventType;
+  type: DataDimension;
+  // dataToReturn: DataToReturnType;
+  dataToReturn: number;
+  condition: [number, number];
+  materialMatrix: number[][];
+  materials: Material[];
+  srcPositionRelative: SourcePosition[];
 };
 
 export type ReturnObjAddonType = {
@@ -35,14 +50,14 @@ export type GetDataType = (
   omegaMatrix: number[],
 ) => ReturnObjAddonType;
 
-export type InitDataObjectType = {
-  condition: number[];
-  returnDataNumber: number;
-  currentDataType: dataType;
-  refractionMatrix: number[];
-  omegaMatrix: number[];
-  dataToReturn: dataToReturnType;
-  returnDataStr: string;
-  refractionMatrixRows: number;
-  sourcePositionRelative: {x: number, y: number};
+export type InitDataObject = {
+  condition: [number, number];
+  dataToReturn: number;
+  materialMatrix: number[];
+  eps: number[];
+  mu: number[];
+  sigma: number[];
+  rows: number;
+  srcPositionRelativeSet: number[];
 };
+

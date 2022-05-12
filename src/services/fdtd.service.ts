@@ -3,9 +3,9 @@ import os from "os";
 import addon from "napi-addon-fdtd";
 
 import {
+  LAB_1D,
   LAB_2D,
-  LAB_3D,
-  LAB_3D_INTERFERENCE,
+  LAB_2D_INTERFERENCE,
 } from "../../constants/data-type.constants";
 
 import {
@@ -16,10 +16,11 @@ import {
 } from "../../constants/ws-event.constants";
 
 import {
-  dataToReturnType,
-  dataType,
-  InitDataObjectType,
-  startMessageType,
+
+  DataDimension,
+  DataToReturn,
+  InitDataObject,
+  MessageFromClient,
 } from "../../types/types";
 
 function testMemoryUsage() {
@@ -35,7 +36,7 @@ function testMemoryUsage() {
 let intervalId;
 let lastClientReceivedStep = 0;
 let lastServerSendedStep = 0;
-let clientData: InitDataObjectType;
+let clientData: InitDataObject;
 
 type sendType = {
   data: any;
@@ -49,7 +50,7 @@ export const onMessage = async (
   messageJSON: WebSocket.Data,
   send: sendType
 ): Promise<void> => {
-  const message: startMessageType | stepMessageType = JSON.parse(
+  const message: MessageFromClient | stepMessageType = JSON.parse(
     messageJSON.toString()
   );
 
@@ -63,8 +64,8 @@ export const onMessage = async (
         clientData = startSendingDataInit(message);
         lastClientReceivedStep = 0;
         lastServerSendedStep = 0;
-        message.type !== "2D"
-          ? newInterval3D(true, send, clientData)
+        message.type === "1D"
+          ? newInterval1D(true, send, clientData)
           : newInterval2D(true, send, clientData);
         break;
 
@@ -75,8 +76,8 @@ export const onMessage = async (
 
       case CONTINUE:
         // newInterval(false, send, clientData);
-        message.type !== "2D"
-          ? newInterval3D(false, send, clientData)
+        message.type === "1D"
+          ? newInterval1D(false, send, clientData)
           : newInterval2D(false, send, clientData);
         console.log("continue sending data");
         break;
@@ -93,74 +94,53 @@ export const onMessage = async (
   } else if ("step" in message) {
     lastClientReceivedStep = message.step || 0;
     console.log("~~~~~~~~~~~~~~~");
-    console.log("~~clientStep---", lastClientReceivedStep);
-    console.log("**serverStep---", lastServerSendedStep);
+    console.log("~~ clientStep ~~", lastClientReceivedStep);
+    console.log("** serverStep **", lastServerSendedStep);
   }
 };
 
 const startSendingDataInit = (
-  message: startMessageType
-): InitDataObjectType => {
+  message: MessageFromClient
+): InitDataObject => {
   // Unpacking request data.
-  const currentDataType: dataType = message.type;
+  const currentDataType: DataDimension = message.type;
 
   let returnDataNumber: number;
 
-  let dataToReturn: dataToReturnType;
+  let rows;
+  let cols;
 
-  let refractionMatrixRows;
-
-  // const sourcePositionRelateive = message.
+  // const srcPositionRelateive = message.
 
   switch (currentDataType) {
+    case LAB_1D:
+      console.log("===== 1D =====");
+      rows = message.materialMatrix?.flat().length;
+      break;
+
     case LAB_2D:
-      console.log("2d!!!!!!!");
-      refractionMatrixRows = message.matrix?.flat().length;
-      break;
-
-    case LAB_3D:
-      console.log("3d!!!!!!!");
-      refractionMatrixRows = message.matrix?.length;
-      break;
-
-    case LAB_3D_INTERFERENCE:
-      console.log("INTERFERNCE");
-      refractionMatrixRows = message.matrix?.length;
-      break;
-  }
-
-  dataToReturn = message.dataToReturn;
-  switch (dataToReturn) {
-    case "Ez":
-      returnDataNumber = 0;
-      break;
-
-    case "Hy":
-      returnDataNumber = 1;
-      break;
-
-    case "Hx":
-      returnDataNumber = 2;
-      break;
-
-    case "Energy":
-      returnDataNumber = 3;
+      console.log("===== 2D =====");
+      rows = message.materialMatrix?.length;
       break;
 
     default:
-      returnDataNumber = 0;
+      rows = 1;
+      
   }
+
+  cols = rows;
+
+  returnDataNumber = message.dataToReturn || 0;
 
   return {
     condition: message.condition,
-    currentDataType,
-    refractionMatrix: message.matrix?.flat(),
-    omegaMatrix: message.omegaMatrix?.flat(),
-    refractionMatrixRows,
-    returnDataNumber,
-    dataToReturn,
-    returnDataStr: "data" + dataToReturn,
-    sourcePositionRelative: message.sourcePositionRelative || { x: 0, y: 0 },
+    materialMatrix: message.materialMatrix?.flat(),
+    eps: message.materials.map(material => material.eps),
+    mu: message.materials.map(material => material.mu),
+    sigma: message.materials.map(material => material.sigma),
+    rows,
+    dataToReturn: returnDataNumber,
+    srcPositionRelativeSet: (message.srcPositionRelative.map(src => [src.x, src.y])).flat() || [0, 0],
   };
 };
 
@@ -172,46 +152,56 @@ async function sleep(ms: number) {
   clearTimeout(timeoutId);
 }
 
-async function newInterval3D(reload: boolean, send, clientData?: InitDataObjectType) {
+async function newInterval2D(reload: boolean, send, clientData: InitDataObject) {
   clearInterval(intervalId);
 
+
+  // console.log(clientData)
+
   // Milliseconds.
-  const TIME_INTERVAL_3D = 1000;
+  const TIME_INTERVAL_2D = 400;
   const SLEEP_TIME = 500;
 
   // Initial data request.
-  let data = addon.getData3D(
+  let data = addon.getData2D(
     clientData.condition,
     reload,
-    clientData.refractionMatrix,
-    clientData.refractionMatrixRows,
-    clientData.returnDataNumber
-    // clientData.omegaMatrix,
+    clientData.materialMatrix,
+    clientData.rows,
+    clientData.eps,
+    clientData.mu,
+    clientData.sigma,
+    clientData.dataToReturn,
+    clientData.srcPositionRelativeSet,
   );
 
-  const stepsPerInterval = 5;
+  const stepsPerInterval = 2;
   const reloadInInterval = false;
   intervalId = setInterval(async () => {
     const calculateAndSendNextLayer = async () => {
       for (let j = 0; j < stepsPerInterval; ++j) {
-        data = addon.getData3D(
+        data = addon.getData2D(
           clientData.condition,
           reloadInInterval,
-          clientData.refractionMatrix,
-          clientData.refractionMatrixRows,
-          clientData.returnDataNumber
-          // clientData.omegaMatrix,
+          clientData.materialMatrix,
+          clientData.rows,
+          clientData.eps,
+          clientData.mu,
+          clientData.sigma,
+          clientData.dataToReturn,
+          clientData.srcPositionRelativeSet,
         );
       }
 
-      lastServerSendedStep = data.currentTick;
+      lastServerSendedStep = data.timeStep;
       const dataToClient = {
         dataX: data.dataX,
         dataY: data.dataY,
-        dataVal: data[clientData.returnDataStr],
-        step: data.currentTick,
-        row: data.row,
-        col: data.col,
+        dataVal: data.dataEz,
+        // dataVal: data[clientData.returnDataStr],
+        step: data.timeStep,
+        row: data.rows,
+        col: data.cols,
         max: data.max,
         min: data.min,
       };
@@ -221,45 +211,55 @@ async function newInterval3D(reload: boolean, send, clientData?: InitDataObjectT
 
     // Waiting for synchronization between server and clent.
     // while
-    if (lastClientReceivedStep < lastServerSendedStep) {
-      sleep(SLEEP_TIME);
-    }
+    // if (lastClientReceivedStep < lastServerSendedStep) {
+      // sleep(SLEEP_TIME);
+    // }
     calculateAndSendNextLayer();
-  }, TIME_INTERVAL_3D);
+  }, TIME_INTERVAL_2D);
 }
 
-async function newInterval2D(reload: boolean, send, clientData: InitDataObjectType) {
+async function newInterval1D(reload: boolean, send, clientData: InitDataObject) {
   clearInterval(intervalId);
 
-  const TIME_INTERVAL_2D = 500;
+  const TIME_INTERVAL_1D = 300;
 
-  const sourcePosition = [clientData.sourcePositionRelative.x || 0, 0.5];
-  // const sourcePosition = 0.2;
+  // const srcPosition = clientData.srcPositionRelativeSet;
+  // const srcPosition = 0.2;
+
+
+  const condition = [1, 10, 1];
+  const eps = [1, 1.2];
+  const materialSize = 2;
+  const sigma = [0, 0.04];
+  const srcPosition = [0.4, 0.8];
+
+  let data = addon.getData1D(condition, true, eps, materialSize, srcPosition, sigma);
 
   // Initial data request.
-  let data = addon.getData2D(
-    clientData.condition || [1, 10, 1],
-    reload,
-    clientData.refractionMatrix,
-    clientData.refractionMatrixRows,
-    sourcePosition,
-    clientData.omegaMatrix
-    // clientData.returnDataNumber
-  );
+  // let data = addon.getData1D(
+  //   clientData.condition || [1, 10, 1],
+  //   reload,
+  //   clientData.refractionMatrix,
+  //   clientData.rows,
+  //   srcPosition,
+  //   clientData.omegaMatrix
+  //   // clientData.returnDataNumber
+  // );
 
-  const stepsPerInterval = 18;
+  const stepsPerInterval = 3;
   const reloadInInterval = false;
 
   intervalId = setInterval(async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
-      data = addon.getData2D(
-        clientData.condition,
-        reloadInInterval,
-        clientData.refractionMatrix,
-        clientData.refractionMatrixRows,
-        sourcePosition,
-        clientData.omegaMatrix
-      );
+      // data = addon.getData1D(
+      //   clientData.condition,
+      //   reloadInInterval,
+      //   clientData.refractionMatrix,
+      //   clientData.rows,
+      //   srcPosition,
+      //   clientData.omegaMatrix
+      // );
+      data = addon.getData1D(condition, reloadInInterval, eps, materialSize, srcPosition, sigma);
     }
 
     lastServerSendedStep = data.currentTick;
@@ -269,7 +269,8 @@ async function newInterval2D(reload: boolean, send, clientData: InitDataObjectTy
       step: data.currentTick,
       col: data.col,
     };
-    testMemoryUsage();
+
+    // testMemoryUsage();
     send(JSON.stringify(dataToClient));
-  }, TIME_INTERVAL_2D);
+  }, TIME_INTERVAL_1D);
 }
