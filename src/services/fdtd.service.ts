@@ -16,7 +16,6 @@ import {
 } from "../../constants/ws-event.constants";
 
 import {
-
   DataDimension,
   DataToReturn,
   InitDataObject,
@@ -28,8 +27,12 @@ function testMemoryUsage() {
   console.log(
     `The script uses approximately ${Math.round(used * 100) / 100} MB`
   );
-  console.log(`Free memory: ${Math.round(os.freemem() / 1024 / 1024 * 100) / 100} MB`);
-  console.log(`Total memory: ${Math.round(os.totalmem() / 1024 / 1024 * 100) / 100} MB`);
+  console.log(
+    `Free memory: ${Math.round((os.freemem() / 1024 / 1024) * 100) / 100} MB`
+  );
+  console.log(
+    `Total memory: ${Math.round((os.totalmem() / 1024 / 1024) * 100) / 100} MB`
+  );
 }
 
 // Global variables.
@@ -44,7 +47,6 @@ type sendType = {
 };
 
 type stepMessageType = { step: number };
-
 
 export const onMessage = async (
   messageJSON: WebSocket.Data,
@@ -99,9 +101,7 @@ export const onMessage = async (
   }
 };
 
-const startSendingDataInit = (
-  message: MessageFromClient
-): InitDataObject => {
+const startSendingDataInit = (message: MessageFromClient): InitDataObject => {
   // Unpacking request data.
   const currentDataType: DataDimension = message.type;
 
@@ -125,7 +125,6 @@ const startSendingDataInit = (
 
     default:
       rows = 1;
-      
   }
 
   cols = rows;
@@ -135,12 +134,14 @@ const startSendingDataInit = (
   return {
     condition: message.condition,
     materialMatrix: message.materialMatrix?.flat(),
-    eps: message.materials.map(material => material.eps),
-    mu: message.materials.map(material => material.mu),
-    sigma: message.materials.map(material => material.sigma),
+    eps: message.materials.map((material) => material.eps),
+    mu: message.materials.map((material) => material.mu),
+    sigma: message.materials.map((material) => material.sigma),
     rows,
     dataToReturn: returnDataNumber,
-    srcPositionRelativeSet: (message.srcPositionRelative.map(src => [src.x, src.y])).flat() || [0, 0],
+    srcPositionRelativeSet: message.srcPositionRelative
+      .map((src) => [src.x, src.y])
+      .flat() || [0, 0],
   };
 };
 
@@ -152,11 +153,14 @@ async function sleep(ms: number) {
   clearTimeout(timeoutId);
 }
 
-async function newInterval2D(reload: boolean, send, clientData: InitDataObject) {
+async function newInterval2D(
+  reload: boolean,
+  send,
+  clientData: InitDataObject
+) {
   clearInterval(intervalId);
 
-
-  // console.log(clientData)
+  console.log("===clientData2D===", clientData);
 
   // Milliseconds.
   const TIME_INTERVAL_2D = 400;
@@ -172,7 +176,7 @@ async function newInterval2D(reload: boolean, send, clientData: InitDataObject) 
     clientData.mu,
     clientData.sigma,
     clientData.dataToReturn,
-    clientData.srcPositionRelativeSet,
+    clientData.srcPositionRelativeSet
   );
 
   const stepsPerInterval = 2;
@@ -189,7 +193,7 @@ async function newInterval2D(reload: boolean, send, clientData: InitDataObject) 
           clientData.mu,
           clientData.sigma,
           clientData.dataToReturn,
-          clientData.srcPositionRelativeSet,
+          clientData.srcPositionRelativeSet
         );
       }
 
@@ -211,55 +215,51 @@ async function newInterval2D(reload: boolean, send, clientData: InitDataObject) 
 
     // Waiting for synchronization between server and clent.
     // while
-    // if (lastClientReceivedStep < lastServerSendedStep) {
-      // sleep(SLEEP_TIME);
-    // }
+    if (lastClientReceivedStep < lastServerSendedStep) {
+    sleep(SLEEP_TIME);
+    }
     calculateAndSendNextLayer();
   }, TIME_INTERVAL_2D);
 }
 
-async function newInterval1D(reload: boolean, send, clientData: InitDataObject) {
+async function newInterval1D(
+  reload: boolean,
+  send,
+  clientData: InitDataObject
+) {
   clearInterval(intervalId);
 
-  const TIME_INTERVAL_1D = 300;
+  const TIME_INTERVAL_1D = 170;
 
-  // const srcPosition = clientData.srcPositionRelativeSet;
-  // const srcPosition = 0.2;
+  console.log("===clientData1D===", clientData);
 
 
-  const condition = [1, 10, 1];
-  const eps = [1, 1.2];
-  const materialSize = 2;
-  const sigma = [0, 0.04];
-  const srcPosition = [0.4, 0.8];
+  let data = addon.getData1D(
+    clientData.condition,
+    reload,
+    clientData.materialMatrix,
+    clientData.rows,
+    clientData.eps,
+    clientData.mu,
+    clientData.sigma,
+    clientData.srcPositionRelativeSet
+  );
 
-  let data = addon.getData1D(condition, true, eps, materialSize, srcPosition, sigma);
-
-  // Initial data request.
-  // let data = addon.getData1D(
-  //   clientData.condition || [1, 10, 1],
-  //   reload,
-  //   clientData.refractionMatrix,
-  //   clientData.rows,
-  //   srcPosition,
-  //   clientData.omegaMatrix
-  //   // clientData.returnDataNumber
-  // );
-
-  const stepsPerInterval = 3;
+  const stepsPerInterval = 2;
   const reloadInInterval = false;
 
   intervalId = setInterval(async () => {
     for (let j = 0; j < stepsPerInterval; ++j) {
-      // data = addon.getData1D(
-      //   clientData.condition,
-      //   reloadInInterval,
-      //   clientData.refractionMatrix,
-      //   clientData.rows,
-      //   srcPosition,
-      //   clientData.omegaMatrix
-      // );
-      data = addon.getData1D(condition, reloadInInterval, eps, materialSize, srcPosition, sigma);
+      data = addon.getData1D(
+        clientData.condition,
+        reloadInInterval,
+        clientData.materialMatrix,
+        clientData.rows,
+        clientData.eps,
+        clientData.mu,
+        clientData.sigma,
+        clientData.srcPositionRelativeSet
+      );
     }
 
     lastServerSendedStep = data.currentTick;
