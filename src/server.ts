@@ -39,6 +39,11 @@ wsServer.on("connection", wsClient => {
   wsClient.on("message", async function(messageJSON) {
     onMessage(messageJSON, wsClient.send.bind(wsClient));
   });
+
+  wsClient.on('close', function() {
+    console.log('Client disconnected.');
+  });
+  
 });
 
 

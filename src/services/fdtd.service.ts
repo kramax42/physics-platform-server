@@ -50,7 +50,8 @@ type stepMessageType = { step: number };
 
 export const onMessage = async (
   messageJSON: WebSocket.Data,
-  send: sendType
+  send: sendType,
+  
 ): Promise<void> => {
   const message: MessageFromClient | stepMessageType = JSON.parse(
     messageJSON.toString()
@@ -95,9 +96,9 @@ export const onMessage = async (
     }
   } else if ("step" in message) {
     lastClientReceivedStep = message.step || 0;
-    console.log("~~~~~~~~~~~~~~~");
-    console.log("~~ clientStep ~~", lastClientReceivedStep);
-    console.log("** serverStep **", lastServerSendedStep);
+    // console.log("~~~~~~~~~~~~~~~");
+    // console.log("~~ clientStep ~~", lastClientReceivedStep);
+    // console.log("** serverStep **", lastServerSendedStep);
   }
 };
 
@@ -160,7 +161,7 @@ async function newInterval2D(
 ) {
   clearInterval(intervalId);
 
-  console.log("===clientData2D===", clientData);
+  // console.log("===clientData2D===", clientData);
 
   // Milliseconds.
   const TIME_INTERVAL_2D = 400;
@@ -215,9 +216,9 @@ async function newInterval2D(
 
     // Waiting for synchronization between server and clent.
     // while
-    if (lastClientReceivedStep < lastServerSendedStep) {
-    sleep(SLEEP_TIME);
-    }
+    // if (lastClientReceivedStep < lastServerSendedStep) {
+    // sleep(SLEEP_TIME);
+    // }
     calculateAndSendNextLayer();
   }, TIME_INTERVAL_2D);
 }
@@ -231,7 +232,7 @@ async function newInterval1D(
 
   const TIME_INTERVAL_1D = 170;
 
-  console.log("===clientData1D===", clientData);
+  // console.log("===clientData1D===", clientData);
 
 
   let data = addon.getData1D(
