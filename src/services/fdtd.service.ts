@@ -275,3 +275,8 @@ async function newInterval1D(
     send(JSON.stringify(dataToClient));
   }, TIME_INTERVAL_1D);
 }
+
+
+export const onClose = () => {
+  clearInterval(intervalId);
+}

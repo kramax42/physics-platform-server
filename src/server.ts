@@ -4,7 +4,7 @@ import express from 'express';
 import * as http from "http"
 
 
-import { onMessage } from './services/fdtd.service';
+import { onClose, onMessage } from './services/fdtd.service';
  
 const port = process.env.PORT || 5001;
 
@@ -38,10 +38,12 @@ const wsServer = new WebSocket.Server(
 wsServer.on("connection", wsClient => {
   wsClient.on("message", async function(messageJSON) {
     onMessage(messageJSON, wsClient.send.bind(wsClient));
+  
   });
 
   wsClient.on('close', function() {
     console.log('Client disconnected.');
+    onClose();
   });
   
 });
