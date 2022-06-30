@@ -61,3 +61,5 @@ export type InitDataObject = {
   srcPositionRelativeSet: number[];
 };
 
+
+export type stepMessageType = { step: number };

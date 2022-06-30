@@ -1,39 +1,19 @@
 import * as WebSocket from "ws";
-import os from "os";
+
 import addon from "napi-addon-fdtd";
 
-import {
-  LAB_1D,
-  LAB_2D,
-  LAB_2D_INTERFERENCE,
-} from "../../constants/data-type.constants";
+import { LAB_1D, LAB_2D } from "../constants/data-type.constants";
 
-import {
-  CLOSE,
-  CONTINUE,
-  PAUSE,
-  START,
-} from "../../constants/ws-event.constants";
+import { CLOSE, CONTINUE, PAUSE, START } from "../constants/ws-event.constants";
 
 import {
   DataDimension,
   DataToReturn,
   InitDataObject,
   MessageFromClient,
-} from "../../types/types";
-
-function testMemoryUsage() {
-  const used = process.memoryUsage().heapUsed / 1024 / 1024;
-  console.log(
-    `The script uses approximately ${Math.round(used * 100) / 100} MB`
-  );
-  console.log(
-    `Free memory: ${Math.round((os.freemem() / 1024 / 1024) * 100) / 100} MB`
-  );
-  console.log(
-    `Total memory: ${Math.round((os.totalmem() / 1024 / 1024) * 100) / 100} MB`
-  );
-}
+  stepMessageType,
+} from "types/types";
+import { showMemoryUsage } from "../utils/show-memory-usage";
 
 // Global variables.
 let intervalId;
@@ -46,12 +26,9 @@ type sendType = {
   cb?: (err?: Error) => void;
 };
 
-type stepMessageType = { step: number };
-
 export const onMessage = async (
   messageJSON: WebSocket.Data,
-  send: sendType,
-  
+  send: sendType
 ): Promise<void> => {
   const message: MessageFromClient | stepMessageType = JSON.parse(
     messageJSON.toString()
@@ -146,14 +123,6 @@ const startSendingDataInit = (message: MessageFromClient): InitDataObject => {
   };
 };
 
-async function sleep(ms: number) {
-  let timeoutId: NodeJS.Timeout;
-  await new Promise((resolve) => {
-    timeoutId = setTimeout(resolve, ms);
-  });
-  clearTimeout(timeoutId);
-}
-
 async function newInterval2D(
   reload: boolean,
   send,
@@ -210,7 +179,7 @@ async function newInterval2D(
         max: data.max,
         min: data.min,
       };
-      testMemoryUsage();
+      showMemoryUsage();
       send(JSON.stringify(dataToClient));
     };
 
@@ -233,7 +202,6 @@ async function newInterval1D(
   const TIME_INTERVAL_1D = 170;
 
   // console.log("===clientData1D===", clientData);
-
 
   let data = addon.getData1D(
     clientData.condition,
@@ -276,7 +244,6 @@ async function newInterval1D(
   }, TIME_INTERVAL_1D);
 }
 
-
 export const onClose = () => {
   clearInterval(intervalId);
-}
+};
